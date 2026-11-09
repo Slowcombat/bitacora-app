@@ -171,9 +171,20 @@ fun ExamenScreen(e: Estado, irAAjustes: () -> Unit) {
         }
         if (sinClave) {
             item {
-                Tarjeta("Falta tu clave de API") {
-                    Text("Para generar exámenes, agrega tu clave de la API de Anthropic en Ajustes.")
-                    Button(onClick = irAAjustes) { Text("Ir a Ajustes") }
+                Tarjeta("Exámenes con tu plan de Claude") {
+                    Text(
+                        "Abre la Bitácora web dentro de Claude: ahí los exámenes y la calificación de tus diagramas funcionan con tu plan, sin pagar aparte.",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Button(onClick = { abrirBitacoraWeb(ctx) }, modifier = Modifier.fillMaxWidth()) {
+                        Text("Abrir la Bitácora web")
+                    }
+                    Text(
+                        "Si algún día quieres los exámenes dentro de esta app, agrega una clave de API en Ajustes (se paga aparte).",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    TextButton(onClick = irAAjustes, contentPadding = PaddingValues(0.dp)) { Text("Ir a Ajustes") }
                 }
             }
         }
@@ -357,6 +368,18 @@ fun ExamenScreen(e: Estado, irAAjustes: () -> Unit) {
                 }
             }
         }
+    }
+}
+
+const val URL_BITACORA_WEB = "https://claude.ai/artifact/UmbjLANMzBCcXE6zjB2e15"
+
+fun abrirBitacoraWeb(ctx: android.content.Context) {
+    try {
+        ctx.startActivity(
+            android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(URL_BITACORA_WEB))
+                .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
+        )
+    } catch (_: Exception) {
     }
 }
 
