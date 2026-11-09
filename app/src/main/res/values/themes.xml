@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Bitacora" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/fondo</item>
+        <item name="android:colorAccent">@color/acento</item>
+    </style>
+    <color name="fondo">#EEF1F5</color>
+    <color name="acento">#2952C9</color>
+    <color name="icono_fondo">#2952C9</color>
+</resources>
