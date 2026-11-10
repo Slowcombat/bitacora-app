@@ -55,6 +55,9 @@ import co.julian.bitacora.data.Pregunta
 import co.julian.bitacora.data.Prompts
 import co.julian.bitacora.data.ResultadoExamen
 import co.julian.bitacora.data.Store
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -66,6 +69,9 @@ private object ExamenEnCurso {
     var preguntas by mutableStateOf<List<Pregunta>?>(null)
     var tipoPreguntas by mutableStateOf("diario")
     var diaExamen by mutableStateOf(LocalDate.now())
+    /** Las peticiones siguen aunque cambies de pestaña; cancelar solo descarta la respuesta. */
+    val alcance = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    var peticion = 0
     val respuestas = mutableStateListOf<Int>()
     var calificado by mutableStateOf(false)
     var practico by mutableStateOf<Practico?>(null)
@@ -106,16 +112,19 @@ fun ExamenScreen(e: Estado, irAAjustes: () -> Unit) {
         x.error = null
         val tipo = x.tipo
         x.diaExamen = hoy
-        scope.launch {
+        val id = ++x.peticion
+        x.alcance.launch {
             try {
                 if (tipo == "practico") {
                     val txt = IA.pedir(e.ajustes, Prompts.practico(hoy), maxTokens = 2000)
+                    if (id != x.peticion) return@launch
                     x.practico = Claude.practicoDe(Claude.extraerJson(txt), Prompts.formatoPractico(hoy))
                     x.respuestaPractico = ""
                     x.foto = null
                     x.evaluacion = null
                 } else {
                     val txt = IA.pedir(e.ajustes, Prompts.examen(tipo, e, hoy), maxTokens = 8000)
+                    if (id != x.peticion) return@launch
                     val ps = Claude.preguntasDe(Claude.extraerJson(txt))
                     x.preguntas = ps
                     x.tipoPreguntas = tipo
@@ -124,13 +133,19 @@ fun ExamenScreen(e: Estado, irAAjustes: () -> Unit) {
                     x.calificado = false
                 }
             } catch (err: ErrorClaude) {
-                x.error = err.message
+                if (id == x.peticion) x.error = err.message
             } catch (err: Exception) {
-                x.error = "No se pudo completar. Intenta de nuevo."
+                if (id == x.peticion) x.error = "No se pudo completar. Intenta de nuevo."
             } finally {
-                x.cargando = false
+                if (id == x.peticion) x.cargando = false
             }
         }
+    }
+
+    fun cancelar() {
+        x.peticion++
+        x.cargando = false
+        x.error = "Cancelado. Puedes intentarlo de nuevo."
     }
 
     fun evaluar() {
@@ -145,23 +160,25 @@ fun ExamenScreen(e: Estado, irAAjustes: () -> Unit) {
         }
         x.cargando = true
         x.error = null
-        scope.launch {
+        val id = ++x.peticion
+        x.alcance.launch {
             try {
                 val txt = IA.pedir(
                     e.ajustes,
                     Prompts.evaluar(p, x.respuestaPractico, x.foto != null),
                     imagenJpeg = x.foto, maxTokens = 3000,
                 )
+                if (id != x.peticion) return@launch
                 val ev = Claude.evaluacionDe(Claude.extraerJson(txt))
                 x.evaluacion = ev
                 val fallos = if (ev.nota < 6) listOf(Fallo(("Ejercicio: " + p.enunciado).take(160), ev.mejorar.take(120))) else emptyList()
                 guardarResultado("practico", ResultadoExamen(ev.nota, 10, fallos), ev.nota >= 6)
             } catch (err: ErrorClaude) {
-                x.error = err.message
+                if (id == x.peticion) x.error = err.message
             } catch (err: Exception) {
-                x.error = "No se pudo completar. Intenta de nuevo."
+                if (id == x.peticion) x.error = "No se pudo completar. Intenta de nuevo."
             } finally {
-                x.cargando = false
+                if (id == x.peticion) x.cargando = false
             }
         }
     }
@@ -378,6 +395,17 @@ fun ExamenScreen(e: Estado, irAAjustes: () -> Unit) {
             }
         }
 
+        if (x.cargando) {
+            item {
+                OutlinedButton(onClick = { cancelar() }, modifier = Modifier.fillMaxWidth()) { Text("Cancelar") }
+                Text(
+                    "Suele tardar menos de un minuto. Si un modelo está ocupado, la app prueba con otro.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 6.dp),
+                )
+            }
+        }
         x.error?.let { msg -> item { Text(msg, color = MaterialTheme.colorScheme.error) } }
 
         item {

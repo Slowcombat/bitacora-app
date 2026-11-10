@@ -52,12 +52,14 @@ object IA {
         }
     }
 
-    private fun post(url: String, cuerpo: String, cabeceras: Map<String, String>): Pair<Int, String> {
+    private class Lento : Exception()
+
+    private fun post(url: String, cuerpo: String, cabeceras: Map<String, String>, esperaMs: Int = 90_000): Pair<Int, String> {
         val con = URL(url).openConnection() as HttpURLConnection
         try {
             con.requestMethod = "POST"
             con.connectTimeout = 20_000
-            con.readTimeout = 180_000
+            con.readTimeout = esperaMs
             con.doOutput = true
             con.setRequestProperty("content-type", "application/json")
             cabeceras.forEach { (k, v) -> con.setRequestProperty(k, v) }
@@ -69,7 +71,7 @@ object IA {
         } catch (e: java.net.UnknownHostException) {
             throw ErrorClaude("No hay conexión a internet.")
         } catch (e: java.net.SocketTimeoutException) {
-            throw ErrorClaude("La respuesta tardó demasiado. Intenta de nuevo.")
+            throw Lento()
         } finally {
             con.disconnect()
         }
@@ -114,11 +116,11 @@ object IA {
                 }
             }
         }
-        val (codigo, texto) = post(
+        val (codigo, texto) = try { post(
             "https://api.groq.com/openai/v1/chat/completions",
             cuerpo.toString(),
             mapOf("Authorization" to "Bearer ${clave.trim()}"),
-        )
+        ) } catch (e: Lento) { throw ErrorClaude("Groq tardó demasiado en responder. Intenta de nuevo.") }
         if (codigo !in 200..299) throw error("Groq", codigo, texto)
         try {
             json.parseToJsonElement(texto).jsonObject["choices"]!!.jsonArray[0]
@@ -139,6 +141,8 @@ object IA {
                 return geminiUno(clave, m, prompt, imagenJpeg, maxTokens)
             } catch (e: ReintentarConOtro) {
                 ultimo = e.error
+            } catch (e: Lento) {
+                ultimo = ErrorClaude("Gemini tardó demasiado en responder. Intenta en unos minutos.")
             }
         }
         throw ultimo ?: ErrorClaude("Gemini no respondió. Intenta más tarde.")
@@ -167,13 +171,15 @@ object IA {
                 }
                 putJsonObject("generationConfig") {
                     put("responseMimeType", "application/json")
+                    // Los modelos 2.5 piensan por defecto y tardan más; para un examen no hace falta.
+                    if (modelo.contains("2.5")) putJsonObject("thinkingConfig") { put("thinkingBudget", 0) }
                     put("maxOutputTokens", maxTokens)
                     put("temperature", 0.6)
                 }
             }
             val url = "https://generativelanguage.googleapis.com/v1beta/models/" +
                 URLEncoder.encode(modelo.trim(), "UTF-8") + ":generateContent"
-            val (codigo, texto) = post(url, cuerpo.toString(), mapOf("x-goog-api-key" to clave.trim()))
+            val (codigo, texto) = post(url, cuerpo.toString(), mapOf("x-goog-api-key" to clave.trim()), esperaMs = 50_000)
             if (codigo !in 200..299) {
                 val err = error("Gemini", codigo, texto)
                 // Ocupado, sin cupo en este modelo o modelo inexistente: probar el siguiente.
