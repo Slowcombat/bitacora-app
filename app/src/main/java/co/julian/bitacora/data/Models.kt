@@ -87,6 +87,8 @@ data class Estado(
     val planRemoto: PlanRemoto? = null,
     /** Fecha y hora de la última sincronización correcta (ISO). */
     val ultimaSync: String = "",
+    /** Día en que empezó a usar la app: desde ahí cuentan los exámenes pendientes. */
+    val fechaInicioApp: String = "",
 )
 
 @Serializable

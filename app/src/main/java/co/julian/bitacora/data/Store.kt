@@ -28,6 +28,10 @@ object Store {
         } catch (e: Exception) {
             inicial()
         }
+        if (_estado.value.fechaInicioApp.isBlank()) {
+            _estado.value = _estado.value.copy(fechaInicioApp = java.time.LocalDate.now().toString())
+            guardar(_estado.value)
+        }
         if (!f.exists()) guardar(_estado.value)
     }
 

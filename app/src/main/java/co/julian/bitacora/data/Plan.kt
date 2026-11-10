@@ -50,7 +50,7 @@ object Plan {
             listOf("logica", "ingles", "dormir"),
             listOf(
                 b("7:05", "7:50", "rest", "Levantarse y alistarse", "Luz y agua apenas te levantes"),
-                b("7:50", "8:50", "eng", "Camino a la U · inglés", "Audio o podcast técnico en el transporte"),
+                b("7:50", "8:50", "eng", "Camino a la U · inglés", "Solo audio: podcast en inglés por el intercomunicador"),
                 b("8:50", "12:09", "uni", "Análisis y Verificación de Algoritmos", "Bloque G · 302"),
                 b("12:10", "12:35", "rest", "Traslado al trabajo"),
                 b("12:40", "13:40", "study", "Lógica cerca del trabajo", "Almuerza y haz la lección del día"),
@@ -63,13 +63,13 @@ object Plan {
             listOf("logica", "ingles", "dormir"),
             listOf(
                 b("5:15", "6:00", "rest", "Levantarse y alistarse", "Luz y agua apenas te levantes"),
-                b("6:00", "7:00", "eng", "Camino a la U · inglés", "Audio o Anki en el transporte"),
+                b("6:00", "7:00", "eng", "Camino a la U · inglés", "Solo audio: podcast en inglés por el intercomunicador"),
                 b("7:00", "10:19", "uni", "Telecomunicaciones", "Bloque K · 006"),
                 b("10:30", "12:30", "study", "Bloque fuerte de lógica", "En la biblioteca de la U: tu mejor hueco del semestre"),
                 b("12:30", "13:30", "rest", "Almuerzo"),
                 b("13:35", "14:00", "rest", "Traslado al trabajo"),
                 b("14:00", "21:00", "work", "Trabajo"),
-                b("21:00", "22:00", "eng", "Camino a casa · inglés", "20 minutos de Anki"),
+                b("21:00", "22:00", "eng", "Camino a casa · inglés", "Solo audio: repite el episodio de la ida"),
                 b("23:00", "23:30", "rest", "Celular lejos", "Mañana te levantas a las 5:15: si puedes, duérmete a las 11:00"),
             ),
         ),
@@ -106,7 +106,7 @@ object Plan {
             listOf("logica", "ingles", "dormir"),
             listOf(
                 b("5:15", "6:00", "rest", "Levantarse y alistarse"),
-                b("6:00", "7:00", "eng", "Camino a la U · inglés", "Audio o Anki"),
+                b("6:00", "7:00", "eng", "Camino a la U · inglés", "Solo audio: podcast en inglés"),
                 b("7:00", "8:29", "uni", "Minería de Datos", "City Campus · 408"),
                 b("8:40", "10:30", "study", "Estudio en el campus", "Aprovecha el hueco entre clases"),
                 b("10:40", "12:09", "uni", "Práctica Aplicada a Sistemas", "City Campus · 512"),
@@ -161,9 +161,9 @@ object Plan {
     val DIAS_BASE: Map<String, List<Bloque>> = mapOf(
         "2026-11-07" to listOf(
             b("6:10", "7:00", "rest", "Levantarse y alistarse", "Luz y agua apenas te levantes"),
-            b("7:00", "8:00", "eng", "Camino al trabajo · inglés", "Audio o Anki en el transporte"),
+            b("7:00", "8:00", "eng", "Camino al trabajo · inglés", "Solo audio: podcast en inglés"),
             b("8:00", "15:00", "work", "Trabajo (turno de mañana)"),
-            b("15:00", "16:00", "eng", "Camino a casa · inglés", "Escucha o Anki"),
+            b("15:00", "16:00", "eng", "Camino a casa · inglés", "Solo audio: podcast en inglés"),
             b("16:30", "17:10", "gym", "Ejercicio", "Rutina en casa o caminata"),
             b("17:30", "19:00", "study", "Prepara tus herramientas", "PSeInt, HackerRank, Anki y la prueba EF SET"),
             b("23:00", "23:30", "rest", "Celular lejos", "Dormido antes de las 11:30"),

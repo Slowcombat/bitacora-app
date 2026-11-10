@@ -152,6 +152,18 @@ object Logica {
         return out.take(15)
     }
 
+    /** Días anteriores (como mucho 14) en los que no hizo el examen diario, del más antiguo al más reciente. */
+    fun examenesPendientes(e: Estado, hoy: LocalDate): List<LocalDate> {
+        val inicioApp = try { LocalDate.parse(e.fechaInicioApp) } catch (_: Exception) { hoy }
+        var d = listOf(inicioApp, INICIO, hoy.minusDays(14)).maxOrNull() ?: hoy
+        val out = mutableListOf<LocalDate>()
+        while (d.isBefore(hoy)) {
+            if (e.entradas[d.toString()]?.examenes?.containsKey("diario") != true) out += d
+            d = d.plusDays(1)
+        }
+        return out
+    }
+
     fun diasParaMeta(hoy: LocalDate) = ChronoUnit.DAYS.between(hoy, META).coerceAtLeast(0)
 
     /** Resumen de los últimos días en texto, para pegarlo en el chat con Claude. */

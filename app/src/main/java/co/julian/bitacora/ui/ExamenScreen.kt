@@ -65,6 +65,7 @@ private object ExamenEnCurso {
     var error by mutableStateOf<String?>(null)
     var preguntas by mutableStateOf<List<Pregunta>?>(null)
     var tipoPreguntas by mutableStateOf("diario")
+    var diaExamen by mutableStateOf(LocalDate.now())
     val respuestas = mutableStateListOf<Int>()
     var calificado by mutableStateOf(false)
     var practico by mutableStateOf<Practico?>(null)
@@ -78,15 +79,21 @@ fun ExamenScreen(e: Estado, irAAjustes: () -> Unit) {
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
     val x = ExamenEnCurso
-    val hoy = LocalDate.now()
+    val hoyReal = LocalDate.now()
+    val pendientes = Logica.examenesPendientes(e, hoyReal)
+    /** Día del examen: el pendiente más antiguo, o hoy si está al día. */
+    val hoy = pendientes.firstOrNull() ?: hoyReal
     val hoyK = hoy.toString()
-    val tipos = Prompts.tipos(hoy)
+    val bloqueado = pendientes.isNotEmpty()
+    val tipos = Prompts.tipos(hoy).map {
+        if (bloqueado && it.id != "diario") it.copy(disponible = false, descripcion = "Primero ponte al día con los pendientes") else it
+    }
     if (tipos.none { it.id == x.tipo && it.disponible }) x.tipo = "diario"
     val hechosHoy = Logica.entrada(e, hoy).examenes
     val sinClave = !IA.hayTexto(e.ajustes)
 
     fun guardarResultado(tipo: String, r: ResultadoExamen, aprobado: Boolean) {
-        Store.editarEntrada(ctx, hoyK) { en ->
+        Store.editarEntrada(ctx, x.diaExamen.toString()) { en ->
             en.copy(
                 examenes = en.examenes + (tipo to r),
                 tareas = if (aprobado) en.tareas + ("logica" to true) else en.tareas,
@@ -98,6 +105,7 @@ fun ExamenScreen(e: Estado, irAAjustes: () -> Unit) {
         x.cargando = true
         x.error = null
         val tipo = x.tipo
+        x.diaExamen = hoy
         scope.launch {
             try {
                 if (tipo == "practico") {
@@ -173,6 +181,19 @@ fun ExamenScreen(e: Estado, irAAjustes: () -> Unit) {
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        }
+        if (bloqueado) {
+            item {
+                val c = LocalColoresTipo.current
+                Tarjeta(fondo = c.suave("uni")) {
+                    Etiqueta("Examen pendiente", c.alerta)
+                    Text(
+                        "Tienes ${pendientes.size} " + (if (pendientes.size == 1) "examen diario pendiente" else "exámenes diarios pendientes") +
+                            ". Haz primero el del ${Logica.fechaLarga(hoy)}: es sobre lo que tocaba estudiar ese día. Hasta ponerte al día no se abren los demás exámenes.",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+            }
         }
         if (sinClave) {
             item {
@@ -311,7 +332,7 @@ fun ExamenScreen(e: Estado, irAAjustes: () -> Unit) {
             val ps = x.preguntas
             if (ps == null || x.tipoPreguntas != x.tipo) {
                 hechosHoy[x.tipo]?.let { r ->
-                    item { Text("Ya hiciste este examen hoy: ${r.puntaje}/${r.total}. Puedes repetirlo con preguntas nuevas.", style = MaterialTheme.typography.bodyMedium) }
+                    item { Text("Ya hiciste este examen: ${r.puntaje}/${r.total}. Puedes repetirlo con preguntas nuevas.", style = MaterialTheme.typography.bodyMedium) }
                 }
                 item { BotonPrincipal(if (x.cargando) "Preparando preguntas…" else "Empezar examen", x.cargando || sinClave) { generar() } }
             } else {
@@ -361,7 +382,7 @@ fun ExamenScreen(e: Estado, irAAjustes: () -> Unit) {
 
         item {
             val historial = (0 until 14).flatMap { i ->
-                val d = hoy.minusDays(i.toLong())
+                val d = hoyReal.minusDays(i.toLong())
                 (e.entradas[d.toString()]?.examenes ?: emptyMap()).map { (t, r) -> Triple(d, t, r) }
             }.take(6)
             if (historial.isNotEmpty()) {
