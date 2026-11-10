@@ -91,7 +91,7 @@ fun AjustesScreen(e: Estado) {
                 )
                 CampoClave(
                     titulo = "Gemini · fotos de diagramas",
-                    ayuda = "Créala gratis en aistudio.google.com → Get API key. Empieza por AIza.",
+                    ayuda = "Créala gratis en aistudio.google.com → Get API key. Empieza por AQ. o AIza.",
                     inicial = e.ajustes.geminiKey,
                     modeloInicial = e.ajustes.geminiModelo,
                     guardar = { k, m -> Store.update(ctx) { it.copy(ajustes = it.ajustes.copy(geminiKey = k, geminiModelo = m.ifBlank { "gemini-flash-latest" })) } },

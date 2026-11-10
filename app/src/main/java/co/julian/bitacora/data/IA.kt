@@ -91,7 +91,7 @@ object IA {
                 404 -> "El modelo de $servicio no existe o cambió de nombre. Revísalo en Ajustes."
                 413 -> "La foto es demasiado grande para $servicio."
                 429 -> "Llegaste al límite gratuito de $servicio por ahora. Intenta más tarde."
-                in 500..599 -> "$servicio está ocupado. Intenta en unos minutos."
+                in 500..599 -> "$servicio está ocupado. Intenta en unos minutos." + if (d.isNotBlank()) " ($codigo: ${d.take(120)})" else " ($codigo)"
                 else -> "Error $codigo de $servicio: $d"
             },
         )
@@ -128,7 +128,25 @@ object IA {
         }
     }
 
-    suspend fun gemini(clave: String, modelo: String, prompt: String, imagenJpeg: ByteArray?, maxTokens: Int): String =
+    private val MODELOS_GEMINI = listOf("gemini-flash-latest", "gemini-flash-lite-latest", "gemini-2.5-flash", "gemini-2.5-flash-lite")
+
+    /** Prueba el modelo elegido y, si está ocupado o no existe, los otros modelos gratuitos. */
+    suspend fun gemini(clave: String, modelo: String, prompt: String, imagenJpeg: ByteArray?, maxTokens: Int): String {
+        val modelos = (listOf(modelo.trim()) + MODELOS_GEMINI).filter { it.isNotBlank() }.distinct()
+        var ultimo: ErrorClaude? = null
+        for (m in modelos) {
+            try {
+                return geminiUno(clave, m, prompt, imagenJpeg, maxTokens)
+            } catch (e: ReintentarConOtro) {
+                ultimo = e.error
+            }
+        }
+        throw ultimo ?: ErrorClaude("Gemini no respondió. Intenta más tarde.")
+    }
+
+    private class ReintentarConOtro(val error: ErrorClaude) : Exception()
+
+    private suspend fun geminiUno(clave: String, modelo: String, prompt: String, imagenJpeg: ByteArray?, maxTokens: Int): String =
         withContext(Dispatchers.IO) {
             val cuerpo = buildJsonObject {
                 putJsonArray("contents") {
@@ -156,7 +174,12 @@ object IA {
             val url = "https://generativelanguage.googleapis.com/v1beta/models/" +
                 URLEncoder.encode(modelo.trim(), "UTF-8") + ":generateContent"
             val (codigo, texto) = post(url, cuerpo.toString(), mapOf("x-goog-api-key" to clave.trim()))
-            if (codigo !in 200..299) throw error("Gemini", codigo, texto)
+            if (codigo !in 200..299) {
+                val err = error("Gemini", codigo, texto)
+                // Ocupado, sin cupo en este modelo o modelo inexistente: probar el siguiente.
+                if (codigo == 404 || codigo == 429 || codigo >= 500) throw ReintentarConOtro(err)
+                throw err
+            }
             try {
                 json.parseToJsonElement(texto).jsonObject["candidates"]!!.jsonArray[0]
                     .jsonObject["content"]!!.jsonObject["parts"]!!.jsonArray
