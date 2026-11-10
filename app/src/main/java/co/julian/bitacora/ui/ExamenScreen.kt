@@ -131,10 +131,16 @@ fun ExamenScreen(e: Estado, irAAjustes: () -> Unit) {
                         Claude.preguntasDe(Claude.extraerJson(txt))
                     }
                     if (id != x.peticion) return@launch
-                    x.preguntas = ps
+                    // Hasta 2 preguntas que falló en días anteriores, con las opciones en otro orden.
+                    val yaIncluidas = ps.map { it.pregunta }.toSet()
+                    val repaso = Logica.repasosPendientes(Store.estado.value, hoyReal)
+                        .filter { it.pregunta !in yaIncluidas }
+                        .take(2)
+                        .map { Logica.comoRepaso(it) }
+                    x.preguntas = ps + repaso
                     x.tipoPreguntas = tipo
                     x.respuestas.clear()
-                    repeat(ps.size) { x.respuestas.add(-1) }
+                    repeat(ps.size + repaso.size) { x.respuestas.add(-1) }
                     x.calificado = false
                 }
             } catch (err: ErrorClaude) {
@@ -376,10 +382,22 @@ fun ExamenScreen(e: Estado, irAAjustes: () -> Unit) {
                         BotonPrincipal(if (faltan > 0) "Te faltan $faltan por responder" else "Calificar", faltan > 0) {
                             x.calificado = true
                             val buenas = ps.indices.count { x.respuestas[it] == ps[it].correcta }
-                            val fallos = ps.indices.filter { x.respuestas[it] != ps[it].correcta }.map {
+                            val malas = ps.indices.filter { x.respuestas[it] != ps[it].correcta }
+                            val fallos = malas.map {
                                 Fallo(ps[it].pregunta.take(160), ps[it].opciones[ps[it].correcta].take(120))
                             }
-                            guardarResultado(x.tipoPreguntas, ResultadoExamen(buenas, ps.size, fallos.take(10)), buenas.toFloat() / ps.size >= 0.6f)
+                            val falladas = malas.map { ps[it].copy(tema = ps[it].tema.removePrefix(Logica.PREFIJO_REPASO)) }
+                            val repasosBien = ps.indices
+                                .filter { ps[it].tema.startsWith(Logica.PREFIJO_REPASO) && x.respuestas[it] == ps[it].correcta }
+                                .map { ps[it].pregunta }
+                            guardarResultado(
+                                x.tipoPreguntas,
+                                ResultadoExamen(buenas, ps.size, fallos.take(10), falladas.take(10)),
+                                buenas.toFloat() / ps.size >= 0.6f,
+                            )
+                            if (repasosBien.isNotEmpty()) {
+                                Store.editarEntrada(ctx, x.diaExamen.toString()) { en -> en.copy(repasosAcertados = (en.repasosAcertados + repasosBien).distinct()) }
+                            }
                         }
                     } else {
                         val buenas = ps.indices.count { x.respuestas[it] == ps[it].correcta }

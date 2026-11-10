@@ -22,6 +22,8 @@ data class ResultadoExamen(
     val puntaje: Int = 0,
     val total: Int = 0,
     val fallos: List<Fallo> = emptyList(),
+    /** Las preguntas falladas completas, para volver a preguntarlas en el repaso. */
+    val falladas: List<Pregunta> = emptyList(),
 )
 
 @Serializable
@@ -35,6 +37,8 @@ data class Entrada(
     val examenes: Map<String, ResultadoExamen> = emptyMap(),
     /** Preguntas que salieron mal planteadas, para que Claude las revise. */
     val reportes: List<String> = emptyList(),
+    /** Preguntas de repaso que ya acertó (texto de la pregunta original). */
+    val repasosAcertados: List<String> = emptyList(),
 )
 
 /**

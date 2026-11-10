@@ -166,6 +166,32 @@ object Logica {
         return out
     }
 
+    const val PREFIJO_REPASO = "Repaso de tus errores · "
+
+    /**
+     * Preguntas falladas en los últimos 14 días que todavía no ha acertado en un repaso,
+     * de la más antigua a la más reciente.
+     */
+    fun repasosPendientes(e: Estado, hoy: LocalDate): List<Pregunta> {
+        val resueltas = e.entradas.values.flatMap { it.repasosAcertados }.toSet()
+        val out = mutableListOf<Pregunta>()
+        for (i in 14 downTo 0) {
+            val en = e.entradas[hoy.minusDays(i.toLong()).toString()] ?: continue
+            en.examenes.values.forEach { r -> out += r.falladas }
+        }
+        return out.filter { it.pregunta !in resueltas }.distinctBy { it.pregunta }
+    }
+
+    /** Misma pregunta con las opciones en otro orden, marcada como repaso. */
+    fun comoRepaso(p: Pregunta): Pregunta {
+        val orden = p.opciones.indices.shuffled()
+        return p.copy(
+            tema = PREFIJO_REPASO + p.tema.removePrefix(PREFIJO_REPASO),
+            opciones = orden.map { p.opciones[it] },
+            correcta = orden.indexOf(p.correcta),
+        )
+    }
+
     fun diasParaMeta(hoy: LocalDate) = ChronoUnit.DAYS.between(hoy, META).coerceAtLeast(0)
 
     /** Resumen de los últimos días en texto, para pegarlo en el chat con Claude. */
