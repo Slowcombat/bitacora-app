@@ -11,6 +11,9 @@ object Logica {
     val FIN_UNI: LocalDate = LocalDate.of(2026, 11, 20)
     val INICIO: LocalDate = LocalDate.of(2026, 11, 9)
     val META: LocalDate = LocalDate.of(2027, 3, 1)
+
+    /** Los exámenes diarios son obligatorios desde el sábado 7 de noviembre. */
+    val INICIO_EXAMENES: LocalDate = LocalDate.of(2026, 11, 7)
     private val ES = Locale("es", "CO")
 
     /** 0 = domingo … 6 = sábado. */
@@ -152,10 +155,9 @@ object Logica {
         return out.take(15)
     }
 
-    /** Días anteriores (como mucho 14) en los que no hizo el examen diario, del más antiguo al más reciente. */
+    /** Días anteriores (desde el 7 de noviembre y como mucho 14) sin examen diario, del más antiguo al más reciente. */
     fun examenesPendientes(e: Estado, hoy: LocalDate): List<LocalDate> {
-        val inicioApp = try { LocalDate.parse(e.fechaInicioApp) } catch (_: Exception) { hoy }
-        var d = listOf(inicioApp, INICIO, hoy.minusDays(14)).maxOrNull() ?: hoy
+        var d = listOf(INICIO_EXAMENES, hoy.minusDays(14)).maxOrNull() ?: hoy
         val out = mutableListOf<LocalDate>()
         while (d.isBefore(hoy)) {
             if (e.entradas[d.toString()]?.examenes?.containsKey("diario") != true) out += d
