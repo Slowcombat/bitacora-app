@@ -1,0 +1,134 @@
+{
+ "preguntas": [
+  {
+   "tema": "Diagramas de flujo",
+   "pregunta": "¿Qué figura representa un proceso o cálculo?",
+   "codigo": "",
+   "opciones": [
+    "Rectángulo",
+    "Rombo",
+    "Óvalo",
+    "Paralelogramo"
+   ],
+   "correcta": 0,
+   "explicacion": "El rectángulo es para asignaciones y cálculos, por ejemplo c <- a + b."
+  },
+  {
+   "tema": "Operaciones",
+   "pregunta": "¿Qué valor queda en r?",
+   "codigo": "r <- (8 - 2) * 3 + 1",
+   "opciones": [
+    "25",
+    "19",
+    "13",
+    "24"
+   ],
+   "correcta": 1,
+   "explicacion": "Primero el paréntesis: 8 - 2 = 6. Luego 6 * 3 = 18, y 18 + 1 = 19."
+  },
+  {
+   "tema": "Condicionales",
+   "pregunta": "¿Qué muestra si x vale 10?",
+   "codigo": "Si x > 10 Entonces\n    Escribir \"Grande\"\nSiNo\n    Escribir \"Pequeño\"\nFinSi",
+   "opciones": [
+    "Grande",
+    "Nada",
+    "Pequeño",
+    "GrandePequeño"
+   ],
+   "correcta": 2,
+   "explicacion": "10 > 10 es falso (10 no es mayor que sí mismo), así que se ejecuta el SiNo."
+  },
+  {
+   "tema": "Operador MOD",
+   "pregunta": "¿Cuánto da 15 MOD 4?",
+   "codigo": "",
+   "opciones": [
+    "3,75",
+    "4",
+    "11",
+    "3"
+   ],
+   "correcta": 3,
+   "explicacion": "15 entre 4 es 3 (4 × 3 = 12) y sobran 3. MOD devuelve ese residuo."
+  },
+  {
+   "tema": "Selección múltiple",
+   "pregunta": "¿Qué muestra si dia vale 7?",
+   "codigo": "Segun dia Hacer\n    1: Escribir \"Lunes\"\n    6: Escribir \"Sábado\"\n    7: Escribir \"Domingo\"\n    De Otro Modo: Escribir \"Entre semana\"\nFinSegun",
+   "opciones": [
+    "Entre semana",
+    "Domingo",
+    "Sábado",
+    "Nada"
+   ],
+   "correcta": 1,
+   "explicacion": "El caso 7 coincide y escribe \"Domingo\"."
+  },
+  {
+   "tema": "Lógica booleana",
+   "pregunta": "Si edad vale 20, ¿cuál de estas condiciones es verdadera?",
+   "codigo": "",
+   "opciones": [
+    "edad < 18",
+    "edad = 18",
+    "edad > 25 O edad < 10",
+    "edad >= 18 Y edad <= 25"
+   ],
+   "correcta": 3,
+   "explicacion": "20 >= 18 es verdadero y 20 <= 25 también; con Y, las dos deben cumplirse."
+  },
+  {
+   "tema": "Condicionales",
+   "pregunta": "¿Por qué 2024 es bisiesto?",
+   "codigo": "",
+   "opciones": [
+    "Porque es par",
+    "Porque termina en 4",
+    "Porque es divisible por 4 y no por 100",
+    "Porque es divisible por 100"
+   ],
+   "correcta": 2,
+   "explicacion": "La regla: divisible por 4 y no por 100, o divisible por 400. 2024 / 4 = 506 exacto y no es divisible por 100."
+  },
+  {
+   "tema": "Git",
+   "pregunta": "¿Qué comando de Git sube tus commits a GitHub?",
+   "codigo": "",
+   "opciones": [
+    "git pull",
+    "git push",
+    "git add",
+    "git init"
+   ],
+   "correcta": 1,
+   "explicacion": "push = empujar tus commits al repositorio remoto. pull trae los cambios del remoto a tu computador."
+  },
+  {
+   "tema": "Inglés técnico",
+   "pregunta": "What does 'input' mean?",
+   "codigo": "",
+   "opciones": [
+    "entrada",
+    "salida",
+    "error",
+    "variable"
+   ],
+   "correcta": 0,
+   "explicacion": "input = entrada (lo que recibe el programa); output = salida."
+  },
+  {
+   "tema": "Inglés técnico",
+   "pregunta": "Choose the correct sentence:",
+   "codigo": "",
+   "opciones": [
+    "If the number are even, prints 'Par'.",
+    "If number even, printing 'Par'.",
+    "If the number is even, print 'Par'.",
+    "The number if is even print."
+   ],
+   "correcta": 2,
+   "explicacion": "'The number is even' (el número es par) usa is porque es singular; 'print' va en imperativo, como una instrucción."
+  }
+ ]
+}

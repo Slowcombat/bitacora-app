@@ -44,6 +44,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import co.julian.bitacora.data.Claude
+import co.julian.bitacora.data.Contenido
 import co.julian.bitacora.data.ErrorClaude
 import co.julian.bitacora.data.Estado
 import co.julian.bitacora.data.Evaluacion
@@ -123,9 +124,13 @@ fun ExamenScreen(e: Estado, irAAjustes: () -> Unit) {
                     x.foto = null
                     x.evaluacion = null
                 } else {
-                    val txt = IA.pedir(e.ajustes, Prompts.examen(tipo, e, hoy), maxTokens = 8000)
+                    // Primer intento del día: examen ya preparado (instantáneo). Repeticiones: preguntas nuevas con IA.
+                    val listo = if (hechosHoy[tipo] == null) Contenido.examen(hoy, tipo) else null
+                    val ps = listo ?: run {
+                        val txt = IA.pedir(e.ajustes, Prompts.examen(tipo, e, hoy), maxTokens = 8000)
+                        Claude.preguntasDe(Claude.extraerJson(txt))
+                    }
                     if (id != x.peticion) return@launch
-                    val ps = Claude.preguntasDe(Claude.extraerJson(txt))
                     x.preguntas = ps
                     x.tipoPreguntas = tipo
                     x.respuestas.clear()
@@ -351,7 +356,7 @@ fun ExamenScreen(e: Estado, irAAjustes: () -> Unit) {
                 hechosHoy[x.tipo]?.let { r ->
                     item { Text("Ya hiciste este examen: ${r.puntaje}/${r.total}. Puedes repetirlo con preguntas nuevas.", style = MaterialTheme.typography.bodyMedium) }
                 }
-                item { BotonPrincipal(if (x.cargando) "Preparando preguntas…" else "Empezar examen", x.cargando || sinClave) { generar() } }
+                item { BotonPrincipal(if (x.cargando) "Preparando preguntas…" else "Empezar examen", x.cargando) { generar() } }
             } else {
                 itemsIndexed(ps) { i, q ->
                     TarjetaPregunta(

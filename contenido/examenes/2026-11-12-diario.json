@@ -1,0 +1,69 @@
+{
+ "preguntas": [
+  {
+   "tema": "Operador MOD",
+   "pregunta": "¿Qué valor da 17 MOD 5?",
+   "codigo": "",
+   "opciones": [
+    "3",
+    "2",
+    "3,4",
+    "12"
+   ],
+   "correcta": 1,
+   "explicacion": "MOD da el residuo de la división: 17 entre 5 es 3 y sobran 2."
+  },
+  {
+   "tema": "Condicionales",
+   "pregunta": "¿Qué condición dice si un número n es par?",
+   "codigo": "",
+   "opciones": [
+    "n / 2 = 0",
+    "n MOD 2 = 1",
+    "n MOD 2 = 0",
+    "n * 2 = 0"
+   ],
+   "correcta": 2,
+   "explicacion": "Un número es par si al dividirlo entre 2 no sobra nada: residuo 0."
+  },
+  {
+   "tema": "Condicionales",
+   "pregunta": "Una nota de 0 a 5 aprueba con 3,0 o más. ¿Qué condición es correcta?",
+   "codigo": "",
+   "opciones": [
+    "nota > 3",
+    "nota = 3",
+    "nota < 3",
+    "nota >= 3"
+   ],
+   "correcta": 3,
+   "explicacion": "Con > 3 un 3,0 exacto reprobaría. El caso límite se incluye con >=."
+  },
+  {
+   "tema": "Condicionales",
+   "pregunta": "Un año es bisiesto si es divisible por 4 y no por 100, o si es divisible por 400. ¿Cuál es bisiesto?",
+   "codigo": "",
+   "opciones": [
+    "1900",
+    "2023",
+    "2100",
+    "2000"
+   ],
+   "correcta": 3,
+   "explicacion": "2000 es divisible por 400. 1900 y 2100 son divisibles por 100 pero no por 400, y 2023 no es divisible por 4."
+  },
+  {
+   "tema": "Inglés técnico",
+   "pregunta": "How do you write 'greater than' in code?",
+   "codigo": "",
+   "opciones": [
+    ">",
+    "<",
+    "=",
+    "<>"
+   ],
+   "correcta": 0,
+   "explicacion": "greater than = mayor que (>), less than = menor que (<)."
+  }
+ ]
+}

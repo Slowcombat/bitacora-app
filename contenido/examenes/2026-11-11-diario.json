@@ -1,0 +1,69 @@
+{
+ "preguntas": [
+  {
+   "tema": "Condicionales",
+   "pregunta": "¿Para qué sirve una estructura Si-Entonces-SiNo?",
+   "codigo": "",
+   "opciones": [
+    "Para repetir instrucciones",
+    "Para elegir entre dos caminos según una condición",
+    "Para guardar varios datos",
+    "Para leer datos del usuario"
+   ],
+   "correcta": 1,
+   "explicacion": "El Si evalúa una condición: si es verdadera hace una cosa, y si es falsa (SiNo) hace otra."
+  },
+  {
+   "tema": "Condicionales",
+   "pregunta": "¿Qué muestra si edad vale 16?",
+   "codigo": "Si edad >= 18 Entonces\n    Escribir \"Mayor de edad\"\nSiNo\n    Escribir \"Menor de edad\"\nFinSi",
+   "opciones": [
+    "Nada",
+    "Mayor de edad",
+    "Ambos mensajes",
+    "Menor de edad"
+   ],
+   "correcta": 3,
+   "explicacion": "16 >= 18 es falso, así que se ejecuta la parte del SiNo."
+  },
+  {
+   "tema": "Condicionales",
+   "pregunta": "¿Qué resultado da la condición 7 > 3?",
+   "codigo": "",
+   "opciones": [
+    "Verdadero",
+    "Falso",
+    "7",
+    "Error"
+   ],
+   "correcta": 0,
+   "explicacion": "Una comparación siempre da un valor lógico. 7 sí es mayor que 3: verdadero."
+  },
+  {
+   "tema": "Operaciones",
+   "pregunta": "¿Qué valor queda en total?",
+   "codigo": "total <- 10\ntotal <- total + 5\ntotal <- total * 2",
+   "opciones": [
+    "15",
+    "25",
+    "30",
+    "20"
+   ],
+   "correcta": 2,
+   "explicacion": "total empieza en 10, luego 10 + 5 = 15, y al final 15 * 2 = 30. Cada línea usa el valor anterior."
+  },
+  {
+   "tema": "Inglés técnico",
+   "pregunta": "In code, the word 'if' means...",
+   "codigo": "",
+   "opciones": [
+    "mientras",
+    "si (condicional)",
+    "para",
+    "sino"
+   ],
+   "correcta": 1,
+   "explicacion": "if = si, else = sino, while = mientras, for = para."
+  }
+ ]
+}

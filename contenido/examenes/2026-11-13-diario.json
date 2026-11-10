@@ -1,0 +1,69 @@
+{
+ "preguntas": [
+  {
+   "tema": "Selección múltiple",
+   "pregunta": "¿Qué muestra si opcion vale 3?",
+   "codigo": "Segun opcion Hacer\n    1: Escribir \"Sumar\"\n    2: Escribir \"Restar\"\n    3: Escribir \"Multiplicar\"\n    De Otro Modo: Escribir \"Opción inválida\"\nFinSegun",
+   "opciones": [
+    "Sumar",
+    "Restar",
+    "Multiplicar",
+    "Opción inválida"
+   ],
+   "correcta": 2,
+   "explicacion": "Segun busca el caso que coincide con el valor: el 3 escribe \"Multiplicar\"."
+  },
+  {
+   "tema": "Selección múltiple",
+   "pregunta": "Con el mismo código, ¿qué muestra si opcion vale 9?",
+   "codigo": "Segun opcion Hacer\n    1: Escribir \"Sumar\"\n    2: Escribir \"Restar\"\n    3: Escribir \"Multiplicar\"\n    De Otro Modo: Escribir \"Opción inválida\"\nFinSegun",
+   "opciones": [
+    "Opción inválida",
+    "Multiplicar",
+    "Nada",
+    "Error de ejecución"
+   ],
+   "correcta": 0,
+   "explicacion": "Si ningún caso coincide, se ejecuta De Otro Modo. Siempre conviene incluirlo para las entradas inválidas."
+  },
+  {
+   "tema": "Selección múltiple",
+   "pregunta": "En Java, ¿qué palabra cumple el papel de 'De Otro Modo' en un switch?",
+   "codigo": "",
+   "opciones": [
+    "else",
+    "default",
+    "break",
+    "case"
+   ],
+   "correcta": 1,
+   "explicacion": "default se ejecuta cuando ningún case coincide. break sirve para salir del switch al terminar un caso."
+  },
+  {
+   "tema": "Condicionales",
+   "pregunta": "En una calculadora, antes de hacer a / b, ¿qué debes verificar?",
+   "codigo": "",
+   "opciones": [
+    "Que a sea mayor que b",
+    "Que a sea par",
+    "Que b sea positivo",
+    "Que b sea diferente de 0"
+   ],
+   "correcta": 3,
+   "explicacion": "Dividir entre 0 no está definido. Hay que validarlo antes y avisar al usuario."
+  },
+  {
+   "tema": "Inglés técnico",
+   "pregunta": "What does 'default' mean in a switch?",
+   "codigo": "",
+   "opciones": [
+    "La primera opción",
+    "La opción que se ejecuta si ningún caso coincide",
+    "Una opción que termina el programa",
+    "Un error"
+   ],
+   "correcta": 1,
+   "explicacion": "default = por defecto: lo que pasa cuando nada más coincide."
+  }
+ ]
+}

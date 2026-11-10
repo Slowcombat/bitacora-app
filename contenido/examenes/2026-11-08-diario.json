@@ -1,0 +1,69 @@
+{
+ "preguntas": [
+  {
+   "tema": "Algoritmos",
+   "pregunta": "¿Cuál de estas opciones es un algoritmo bien escrito para preparar un café?",
+   "codigo": "",
+   "opciones": [
+    "Hacer el café.",
+    "Calentar agua, o no, según el día.",
+    "Servir el agua, calentar el agua, poner café.",
+    "1. Calentar agua. 2. Poner café en la taza. 3. Servir el agua. 4. Revolver."
+   ],
+   "correcta": 3,
+   "explicacion": "Un algoritmo tiene pasos concretos, finitos y en el orden correcto. 'Hacer el café' no es un paso, y servir el agua antes de calentarla rompe el orden."
+  },
+  {
+   "tema": "Algoritmos",
+   "pregunta": "¿Qué característica NO debe tener un algoritmo?",
+   "codigo": "",
+   "opciones": [
+    "Ser finito",
+    "Tener pasos ambiguos",
+    "Tener un orden definido",
+    "Producir un resultado"
+   ],
+   "correcta": 1,
+   "explicacion": "Cada paso debe entenderse de una sola forma. Si un paso es ambiguo, dos personas lo ejecutarían distinto."
+  },
+  {
+   "tema": "Git",
+   "pregunta": "¿Qué comando crea un repositorio de Git nuevo en la carpeta actual?",
+   "codigo": "",
+   "opciones": [
+    "git init",
+    "git start",
+    "git new",
+    "git create"
+   ],
+   "correcta": 0,
+   "explicacion": "git init crea la carpeta oculta .git, donde Git guarda todo el historial del proyecto."
+  },
+  {
+   "tema": "Git",
+   "pregunta": "Acabas de modificar README.md. ¿Qué secuencia lo guarda en el historial?",
+   "codigo": "",
+   "opciones": [
+    "git commit y luego git add",
+    "git push y luego git commit",
+    "git add README.md y luego git commit -m \"mensaje\"",
+    "git save README.md"
+   ],
+   "correcta": 2,
+   "explicacion": "Primero preparas el cambio con git add (staging) y después lo guardas en el historial con git commit."
+  },
+  {
+   "tema": "Inglés técnico",
+   "pregunta": "In programming, what does 'output' mean?",
+   "codigo": "",
+   "opciones": [
+    "La entrada de datos",
+    "El resultado que produce el programa",
+    "Un error del programa",
+    "Un tipo de variable"
+   ],
+   "correcta": 1,
+   "explicacion": "Output es la salida: lo que el programa muestra o entrega. Input es la entrada."
+  }
+ ]
+}

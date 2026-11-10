@@ -1,0 +1,69 @@
+{
+ "preguntas": [
+  {
+   "tema": "Ciclo Mientras",
+   "pregunta": "¿Qué muestra este algoritmo?",
+   "codigo": "i <- 1\nMientras i <= 3 Hacer\n    Escribir i\n    i <- i + 1\nFinMientras",
+   "opciones": [
+    "1 2 3",
+    "1 2",
+    "0 1 2 3",
+    "1 2 3 4"
+   ],
+   "correcta": 0,
+   "explicacion": "i empieza en 1 y se escribe mientras sea <= 3. Cuando llega a 4, la condición es falsa y el ciclo termina."
+  },
+  {
+   "tema": "Ciclo Mientras",
+   "pregunta": "En un ciclo Mientras i <= 3, si i empieza en 1 y nunca cambias su valor, ¿qué pasa?",
+   "codigo": "",
+   "opciones": [
+    "El ciclo no se ejecuta",
+    "Se ejecuta 3 veces",
+    "Se repite para siempre (ciclo infinito)",
+    "Da error de sintaxis"
+   ],
+   "correcta": 2,
+   "explicacion": "Si i nunca crece, i <= 3 siempre es verdadero y el ciclo nunca termina. Revisa siempre que la condición pueda volverse falsa."
+  },
+  {
+   "tema": "Condicionales",
+   "pregunta": "¿Qué muestra si nota vale 2,9?",
+   "codigo": "Si nota >= 3 Entonces\n    Escribir \"Aprobó\"\nSiNo\n    Escribir \"Reprobó\"\nFinSi",
+   "opciones": [
+    "Aprobó",
+    "Nada",
+    "Reprobó",
+    "Error"
+   ],
+   "correcta": 2,
+   "explicacion": "2,9 >= 3 es falso, así que se ejecuta el SiNo."
+  },
+  {
+   "tema": "Acumuladores",
+   "pregunta": "¿Cuánto vale suma al final?",
+   "codigo": "suma <- 0\nn <- 1\nMientras n <= 4 Hacer\n    suma <- suma + n\n    n <- n + 1\nFinMientras",
+   "opciones": [
+    "4",
+    "5",
+    "9",
+    "10"
+   ],
+   "correcta": 3,
+   "explicacion": "suma es un acumulador: 0 + 1 + 2 + 3 + 4 = 10. n es el contador que avanza de 1 en 1."
+  },
+  {
+   "tema": "Inglés técnico",
+   "pregunta": "In programming, a 'loop' is...",
+   "codigo": "",
+   "opciones": [
+    "una condición",
+    "un ciclo o bucle",
+    "una variable",
+    "una función"
+   ],
+   "correcta": 1,
+   "explicacion": "loop = ciclo. while loop = ciclo Mientras; for loop = ciclo Para."
+  }
+ ]
+}

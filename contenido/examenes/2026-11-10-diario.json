@@ -1,0 +1,69 @@
+{
+ "preguntas": [
+  {
+   "tema": "Tipos de datos",
+   "pregunta": "¿Qué tipo de dato usarías para guardar un promedio como 3,7?",
+   "codigo": "",
+   "opciones": [
+    "Entero",
+    "Caracter",
+    "Lógico",
+    "Real"
+   ],
+   "correcta": 3,
+   "explicacion": "Los números con decimales son de tipo Real (double en Java). Entero no guarda decimales."
+  },
+  {
+   "tema": "Operaciones",
+   "pregunta": "¿Qué valor queda en x?",
+   "codigo": "x <- 2 + 3 * 4",
+   "opciones": [
+    "20",
+    "24",
+    "14",
+    "9"
+   ],
+   "correcta": 2,
+   "explicacion": "La multiplicación va antes que la suma: 3 * 4 = 12 y luego 2 + 12 = 14."
+  },
+  {
+   "tema": "Operaciones",
+   "pregunta": "Si a = 4 y b = 6, ¿qué expresión calcula bien su promedio?",
+   "codigo": "",
+   "opciones": [
+    "a + b / 2",
+    "(a + b) / 2",
+    "a + (b / 2)",
+    "a / 2 + b"
+   ],
+   "correcta": 1,
+   "explicacion": "Sin paréntesis, b / 2 se hace primero. Con (a + b) / 2 sumas primero y luego divides: 5."
+  },
+  {
+   "tema": "Entrada, proceso y salida",
+   "pregunta": "Con F = C × 9/5 + 32, ¿a cuántos grados Fahrenheit equivalen 25 °C?",
+   "codigo": "",
+   "opciones": [
+    "45",
+    "57",
+    "77",
+    "82"
+   ],
+   "correcta": 2,
+   "explicacion": "25 × 9/5 = 45, y 45 + 32 = 77."
+  },
+  {
+   "tema": "Inglés técnico",
+   "pregunta": "What is a 'boolean' value?",
+   "codigo": "",
+   "opciones": [
+    "Un valor que solo puede ser verdadero o falso",
+    "Un número con decimales",
+    "Un texto",
+    "Una lista de valores"
+   ],
+   "correcta": 0,
+   "explicacion": "Un booleano solo tiene dos valores: true (verdadero) o false (falso). Es el tipo Lógico de PSeInt."
+  }
+ ]
+}
