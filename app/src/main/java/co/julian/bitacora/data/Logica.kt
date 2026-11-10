@@ -146,4 +146,33 @@ object Logica {
     }
 
     fun diasParaMeta(hoy: LocalDate) = ChronoUnit.DAYS.between(hoy, META).coerceAtLeast(0)
+
+    /** Resumen de los últimos días en texto, para pegarlo en el chat con Claude. */
+    fun resumen(e: Estado, hoy: LocalDate, dias: Int = 7): String {
+        val sb = StringBuilder()
+        sb.appendLine("Resumen de mi Bitácora (últimos $dias días, semana ${semanaPlan(hoy)} de 16: ${temaSemana(hoy)})")
+        sb.appendLine("Racha: ${racha(e, hoy)} días. Hora de dormir objetivo: ${e.ajustes.horaDormir}.")
+        sb.appendLine()
+        for (i in dias - 1 downTo 0) {
+            val d = hoy.minusDays(i.toLong())
+            val p = plantilla(e, d)
+            val en = e.entradas[d.toString()] ?: Entrada()
+            val hechas = p.tareas.filter { en.tareas[it] == true }
+            val faltan = p.tareas.filter { en.tareas[it] != true }
+            sb.appendLine("${fechaLarga(d)}:")
+            sb.appendLine("  Tareas: ${hechas.size}/${p.tareas.size}" + (if (faltan.isNotEmpty()) " (faltó: ${faltan.joinToString(", ")})" else ""))
+            if (en.minutos > 0) sb.appendLine("  Estudio: ${en.minutos} min")
+            val h = horasSueno(en)
+            if (h != null) sb.appendLine("  Sueño: ${en.acoste} a ${en.desperte} (${formatoHoras(h)})")
+            if (en.energia > 0) sb.appendLine("  Energía al despertar: ${en.energia}/5")
+            en.examenes.forEach { (tipo, r) ->
+                sb.appendLine("  Examen $tipo: ${r.puntaje}/${r.total}")
+                r.fallos.forEach { f -> sb.appendLine("    Falló: ${f.q}" + if (f.r.isNotBlank()) " → ${f.r}" else "") }
+            }
+            if (en.nota.isNotBlank()) sb.appendLine("  Nota: ${en.nota}")
+        }
+        sb.appendLine()
+        sb.append("Revisa mi progreso y ajusta el plan según mis falencias.")
+        return sb.toString()
+    }
 }

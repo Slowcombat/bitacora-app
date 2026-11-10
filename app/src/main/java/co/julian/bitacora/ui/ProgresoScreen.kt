@@ -1,6 +1,9 @@
 package co.julian.bitacora.ui
 
+import android.content.Intent
 import androidx.compose.foundation.background
+import androidx.compose.material3.Button
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -60,6 +63,23 @@ fun ProgresoScreen(e: Estado, abrirDia: (LocalDate) -> Unit) {
 
     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item { Text("Progreso", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) }
+        item {
+            val ctx = LocalContext.current
+            Tarjeta("Revisión con Claude") {
+                Text(
+                    "Comparte el resumen de tu semana en el chat con Claude para que revise tus falencias y ajuste el plan. Si hiciste exámenes en la Bitácora web, Claude también los lee desde allá.",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Button(
+                    onClick = {
+                        val texto = Logica.resumen(e, hoy)
+                        val envio = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, texto)
+                        ctx.startActivity(Intent.createChooser(envio, "Compartir mi semana"))
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) { Text("Compartir mi semana con Claude") }
+            }
+        }
         item {
             Tarjeta {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
