@@ -33,6 +33,8 @@ data class Entrada(
     val desperte: String = "",
     val energia: Int = 0,
     val examenes: Map<String, ResultadoExamen> = emptyMap(),
+    /** Preguntas que salieron mal planteadas, para que Claude las revise. */
+    val reportes: List<String> = emptyList(),
 )
 
 /**
@@ -54,8 +56,18 @@ data class Alarma(
 
 @Serializable
 data class Ajustes(
+    /** Groq: exámenes de texto, gratis. */
+    val groqKey: String = "",
+    val groqModelo: String = "openai/gpt-oss-120b",
+    /** Gemini: revisión de fotos de diagramas, gratis con límites. */
+    val geminiKey: String = "",
+    val geminiModelo: String = "gemini-flash-latest",
+    /** Claude por API (opcional, de pago). */
     val apiKey: String = "",
     val modelo: String = "claude-sonnet-5-5",
+    /** Revisión automática: repositorio privado y token de GitHub. */
+    val githubRepo: String = "Slowcombat/bitacora-datos",
+    val githubToken: String = "",
     val avisosActivos: Boolean = true,
     val minutosAntes: Int = 10,
     val horaDormir: String = "23:30",
@@ -71,6 +83,28 @@ data class Estado(
     val alarmas: List<Alarma> = emptyList(),
     val ajustes: Ajustes = Ajustes(),
     val version: Int = 1,
+    /** Plan ajustado por Claude en la última revisión. */
+    val planRemoto: PlanRemoto? = null,
+    /** Fecha y hora de la última sincronización correcta (ISO). */
+    val ultimaSync: String = "",
+)
+
+@Serializable
+data class LeccionRemota(
+    val titulo: String = "",
+    val pasos: List<String> = emptyList(),
+    val ingles: String = "",
+    val mejorar: String = "",
+)
+
+/** Lo que Claude publica en plan.json después de cada revisión. */
+@Serializable
+data class PlanRemoto(
+    val actualizado: String = "",
+    val mensaje: String = "",
+    val refuerzo: List<String> = emptyList(),
+    val notasExamen: String = "",
+    val lecciones: Map<String, LeccionRemota> = emptyMap(),
 )
 
 data class Leccion(

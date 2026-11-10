@@ -48,6 +48,7 @@ import co.julian.bitacora.data.ErrorClaude
 import co.julian.bitacora.data.Estado
 import co.julian.bitacora.data.Evaluacion
 import co.julian.bitacora.data.Fallo
+import co.julian.bitacora.data.IA
 import co.julian.bitacora.data.Logica
 import co.julian.bitacora.data.Practico
 import co.julian.bitacora.data.Pregunta
@@ -82,7 +83,7 @@ fun ExamenScreen(e: Estado, irAAjustes: () -> Unit) {
     val tipos = Prompts.tipos(hoy)
     if (tipos.none { it.id == x.tipo && it.disponible }) x.tipo = "diario"
     val hechosHoy = Logica.entrada(e, hoy).examenes
-    val sinClave = e.ajustes.apiKey.isBlank()
+    val sinClave = !IA.hayTexto(e.ajustes)
 
     fun guardarResultado(tipo: String, r: ResultadoExamen, aprobado: Boolean) {
         Store.editarEntrada(ctx, hoyK) { en ->
@@ -100,13 +101,13 @@ fun ExamenScreen(e: Estado, irAAjustes: () -> Unit) {
         scope.launch {
             try {
                 if (tipo == "practico") {
-                    val txt = Claude.pedir(e.ajustes.apiKey, e.ajustes.modelo, Prompts.practico(hoy), maxTokens = 1500)
+                    val txt = IA.pedir(e.ajustes, Prompts.practico(hoy), maxTokens = 2000)
                     x.practico = Claude.practicoDe(Claude.extraerJson(txt), Prompts.formatoPractico(hoy))
                     x.respuestaPractico = ""
                     x.foto = null
                     x.evaluacion = null
                 } else {
-                    val txt = Claude.pedir(e.ajustes.apiKey, e.ajustes.modelo, Prompts.examen(tipo, e, hoy), maxTokens = 8000)
+                    val txt = IA.pedir(e.ajustes, Prompts.examen(tipo, e, hoy), maxTokens = 8000)
                     val ps = Claude.preguntasDe(Claude.extraerJson(txt))
                     x.preguntas = ps
                     x.tipoPreguntas = tipo
@@ -130,14 +131,18 @@ fun ExamenScreen(e: Estado, irAAjustes: () -> Unit) {
             x.error = "Escribe tu solución o sube la foto de tu diagrama."
             return
         }
+        if (x.foto != null && !IA.hayFotos(e.ajustes)) {
+            x.error = "Para revisar fotos agrega tu clave gratuita de Gemini en Ajustes, o escribe tu solución y quita la foto."
+            return
+        }
         x.cargando = true
         x.error = null
         scope.launch {
             try {
-                val txt = Claude.pedir(
-                    e.ajustes.apiKey, e.ajustes.modelo,
+                val txt = IA.pedir(
+                    e.ajustes,
                     Prompts.evaluar(p, x.respuestaPractico, x.foto != null),
-                    imagenJpeg = x.foto, maxTokens = 2500,
+                    imagenJpeg = x.foto, maxTokens = 3000,
                 )
                 val ev = Claude.evaluacionDe(Claude.extraerJson(txt))
                 x.evaluacion = ev
@@ -171,20 +176,15 @@ fun ExamenScreen(e: Estado, irAAjustes: () -> Unit) {
         }
         if (sinClave) {
             item {
-                Tarjeta("Exámenes con tu plan de Claude") {
+                Tarjeta("Falta tu clave gratuita") {
                     Text(
-                        "Abre la Bitácora web dentro de Claude: ahí los exámenes y la calificación de tus diagramas funcionan con tu plan, sin pagar aparte.",
+                        "Los exámenes usan Groq, que es gratis. Agrega tu clave en Ajustes; para revisar fotos de diagramas agrega también la de Gemini.",
                         style = MaterialTheme.typography.bodyMedium,
                     )
-                    Button(onClick = { abrirBitacoraWeb(ctx) }, modifier = Modifier.fillMaxWidth()) {
-                        Text("Abrir la Bitácora web")
+                    Button(onClick = irAAjustes, modifier = Modifier.fillMaxWidth()) { Text("Ir a Ajustes") }
+                    TextButton(onClick = { abrirBitacoraWeb(ctx) }, contentPadding = PaddingValues(0.dp)) {
+                        Text("Mientras tanto, usar la Bitácora web")
                     }
-                    Text(
-                        "Si algún día quieres los exámenes dentro de esta app, agrega una clave de API en Ajustes (se paga aparte).",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    TextButton(onClick = irAAjustes, contentPadding = PaddingValues(0.dp)) { Text("Ir a Ajustes") }
                 }
             }
         }
@@ -316,7 +316,14 @@ fun ExamenScreen(e: Estado, irAAjustes: () -> Unit) {
                 item { BotonPrincipal(if (x.cargando) "Preparando preguntas…" else "Empezar examen", x.cargando || sinClave) { generar() } }
             } else {
                 itemsIndexed(ps) { i, q ->
-                    TarjetaPregunta(i, q, x.respuestas.getOrElse(i) { -1 }, x.calificado) { j ->
+                    TarjetaPregunta(
+                        i, q, x.respuestas.getOrElse(i) { -1 }, x.calificado,
+                        reportar = {
+                            Store.editarEntrada(ctx, hoyK) { en ->
+                                en.copy(reportes = (en.reportes + "${q.pregunta.take(200)} (marcada correcta: ${q.opciones[q.correcta].take(80)})").takeLast(20))
+                            }
+                        },
+                    ) { j ->
                         if (!x.calificado && i < x.respuestas.size) x.respuestas[i] = j
                     }
                 }
@@ -408,8 +415,16 @@ private fun Comentario(titulo: String, texto: String, color: androidx.compose.ui
 }
 
 @Composable
-private fun TarjetaPregunta(i: Int, q: Pregunta, elegida: Int, calificado: Boolean, elegir: (Int) -> Unit) {
+private fun TarjetaPregunta(
+    i: Int,
+    q: Pregunta,
+    elegida: Int,
+    calificado: Boolean,
+    reportar: () -> Unit,
+    elegir: (Int) -> Unit,
+) {
     val c = LocalColoresTipo.current
+    var reportada by remember(q) { mutableStateOf(false) }
     Tarjeta {
         Etiqueta("${(i + 1).toString().padStart(2, '0')} · ${q.tema}")
         Text(q.pregunta, fontWeight = FontWeight.SemiBold)
@@ -453,6 +468,11 @@ private fun TarjetaPregunta(i: Int, q: Pregunta, elegida: Int, calificado: Boole
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            TextButton(
+                onClick = { reportar(); reportada = true },
+                enabled = !reportada,
+                contentPadding = PaddingValues(0.dp),
+            ) { Text(if (reportada) "Reportada: Claude la revisará" else "Reportar pregunta mal planteada") }
         }
     }
 }

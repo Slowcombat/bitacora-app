@@ -72,7 +72,7 @@ object Prompts {
             "\nIncluye 1 o 2 preguntas que repasen estos conceptos en los que se equivocó hace poco (con otra redacción): " +
                 fallos.joinToString(" | ") { it.q }
         } else ""
-        val notas = if (nota.isNotBlank()) "\nNotas recientes del estudiante sobre lo que le costó: ${nota.take(400)}" else ""
+        val notas = (if (nota.isNotBlank()) "\nNotas recientes del estudiante sobre lo que le costó: ${nota.take(400)}" else "") + refuerzo()
         return """Eres un profesor que prepara un examen corto. $PERFIL
 Escribe exactamente $cantidad preguntas de opción múltiple en español: $foco$repaso$notas
 Reglas: 4 opciones por pregunta, una sola correcta, distractores creíbles, preguntas prácticas (qué imprime este código, qué estructura usar, qué hace un comando) más que definiciones de memoria. Si la pregunta usa código, ponlo en "codigo" (máximo 12 líneas: Java, SQL, pseudocódigo o comandos de Git); si no, deja "codigo" vacío. La explicación debe tener 1 o 2 frases y enseñar el porqué. Varía la posición de la respuesta correcta.
@@ -85,7 +85,7 @@ Responde solo con JSON con esta forma: {"preguntas":[{"tema":"...","pregunta":".
         val tema = Logica.temaSemana(hoy)
         val leccion = Logica.leccion(hoy)
         val formato = formatoPractico(hoy)
-        val hoyTxt = leccion?.let { " Tema de hoy: ${it.titulo} (${it.pasos.joinToString(" ")})." } ?: ""
+        val hoyTxt = (leccion?.let { " Tema de hoy: ${it.titulo} (${it.pasos.joinToString(" ")})." } ?: "") + refuerzo()
         val forma = if (formato == "diagrama") {
             "Debe poder resolverse con un diagrama de flujo o pseudocódigo de PSeInt de 5 a 15 pasos."
         } else {
@@ -111,5 +111,14 @@ Revisa si resuelve el problema, si contempla casos límite y si es clara. No pen
 Responde solo con JSON: {"nota": un entero de 0 a 10, "bien":"1 o 2 frases", "mejorar":"1 a 3 frases concretas", "solucion":"una solución corta en el mismo formato que usó"}"""
     }
 
-    const val PRUEBA = "Responde solo con la palabra: listo"
+    /** Indicaciones de la última revisión de Claude, si las hay. */
+    private fun refuerzo(): String {
+        val p = Store.estado.value.planRemoto ?: return ""
+        val partes = mutableListOf<String>()
+        if (p.refuerzo.isNotEmpty()) partes += "Según su última revisión, debe reforzar: ${p.refuerzo.joinToString("; ")}. Incluye al menos una pregunta de esos temas."
+        if (p.notasExamen.isNotBlank()) partes += "Indicaciones de su tutor: ${p.notasExamen}"
+        return if (partes.isEmpty()) "" else "\n" + partes.joinToString("\n")
+    }
+
+    const val PRUEBA = "Responde solo con este JSON: {\"estado\":\"listo\"}"
 }

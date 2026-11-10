@@ -41,6 +41,8 @@ import co.julian.bitacora.alarm.Scheduler
 import co.julian.bitacora.data.Claude
 import co.julian.bitacora.data.ErrorClaude
 import co.julian.bitacora.data.Estado
+import co.julian.bitacora.data.IA
+import co.julian.bitacora.data.Sync
 import co.julian.bitacora.data.Logica
 import co.julian.bitacora.data.Prompts
 import co.julian.bitacora.data.Store
@@ -57,10 +59,6 @@ fun AjustesScreen(e: Estado) {
         refresco++
         onPauseOrDispose { }
     }
-    var clave by remember { mutableStateOf(e.ajustes.apiKey) }
-    var verClave by remember { mutableStateOf(false) }
-    var prueba by remember { mutableStateOf<String?>(null) }
-    var probando by remember { mutableStateOf(false) }
 
     fun abrir(intent: Intent) {
         try {
@@ -79,58 +77,92 @@ fun AjustesScreen(e: Estado) {
         item {
             Tarjeta("Exámenes con IA") {
                 Text(
-                    "Pega tu clave de la API de Anthropic (empieza por sk-ant-). La creas en console.anthropic.com → API Keys. Solo se guarda en este celular.",
+                    "Groq hace los exámenes y es gratis. Gemini revisa las fotos de tus diagramas y también es gratis, con límite diario. Claude es opcional y de pago. Las claves solo se guardan en este celular.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                CampoClave(
+                    titulo = "Groq · exámenes",
+                    ayuda = "Créala gratis en console.groq.com → API Keys. Empieza por gsk_.",
+                    inicial = e.ajustes.groqKey,
+                    modeloInicial = e.ajustes.groqModelo,
+                    guardar = { k, m -> Store.update(ctx) { it.copy(ajustes = it.ajustes.copy(groqKey = k, groqModelo = m.ifBlank { "openai/gpt-oss-120b" })) } },
+                    probar = { k, m -> IA.groq(k, m, Prompts.PRUEBA, 200) },
+                )
+                CampoClave(
+                    titulo = "Gemini · fotos de diagramas",
+                    ayuda = "Créala gratis en aistudio.google.com → Get API key. Empieza por AIza.",
+                    inicial = e.ajustes.geminiKey,
+                    modeloInicial = e.ajustes.geminiModelo,
+                    guardar = { k, m -> Store.update(ctx) { it.copy(ajustes = it.ajustes.copy(geminiKey = k, geminiModelo = m.ifBlank { "gemini-flash-latest" })) } },
+                    probar = { k, m -> IA.gemini(k, m, Prompts.PRUEBA, null, 200) },
+                )
+                CampoClave(
+                    titulo = "Claude · opcional, de pago",
+                    ayuda = "Solo si algún día quieres usar Claude por API (console.anthropic.com). Se cobra aparte del plan Pro.",
+                    inicial = e.ajustes.apiKey,
+                    modeloInicial = e.ajustes.modelo,
+                    guardar = { k, m -> Store.update(ctx) { it.copy(ajustes = it.ajustes.copy(apiKey = k, modelo = m.ifBlank { "claude-sonnet-5-5" })) } },
+                    probar = { k, m -> Claude.pedir(k, m, Prompts.PRUEBA, maxTokens = 50) },
+                )
+                Text(
+                    "Ahora los exámenes usan: " + (IA.nombreTexto(e.ajustes) ?: "ninguno (falta una clave)") +
+                        ". Fotos: " + (if (e.ajustes.geminiKey.isNotBlank()) "Gemini" else if (e.ajustes.apiKey.isNotBlank()) "Claude" else "sin configurar") + ".",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+        }
+
+        item {
+            var repo by remember { mutableStateOf(e.ajustes.githubRepo) }
+            var token by remember { mutableStateOf(e.ajustes.githubToken) }
+            var verToken by remember { mutableStateOf(false) }
+            var estadoSync by remember { mutableStateOf<String?>(null) }
+            var sincronizando by remember { mutableStateOf(false) }
+            Tarjeta("Revisión automática con Claude") {
+                Text(
+                    "La app sube tu registro a un repositorio privado de GitHub. Cada 3 días Claude lo revisa, ajusta tus lecciones según tus fallos y publica el plan nuevo, que la app descarga sola.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 OutlinedTextField(
-                    value = clave,
-                    onValueChange = { clave = it.trim() },
-                    label = { Text("Clave de API") },
+                    value = repo,
+                    onValueChange = { repo = it.trim() },
+                    label = { Text("Repositorio privado (usuario/nombre)") },
                     singleLine = true,
-                    visualTransformation = if (verClave) VisualTransformation.None else PasswordVisualTransformation(),
-                    trailingIcon = { TextButton(onClick = { verClave = !verClave }) { Text(if (verClave) "Ocultar" else "Ver") } },
                     modifier = Modifier.fillMaxWidth(),
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(onClick = {
-                        Store.update(ctx) { it.copy(ajustes = it.ajustes.copy(apiKey = clave)) }
-                        prueba = "Clave guardada."
-                    }) { Text("Guardar") }
-                    OutlinedButton(
-                        enabled = !probando && clave.isNotBlank(),
-                        onClick = {
-                            probando = true
-                            prueba = "Probando…"
-                            scope.launch {
-                                prueba = try {
-                                    Claude.pedir(clave, e.ajustes.modelo, Prompts.PRUEBA, maxTokens = 20)
-                                    Store.update(ctx) { it.copy(ajustes = it.ajustes.copy(apiKey = clave)) }
-                                    "Conexión correcta. La clave quedó guardada."
-                                } catch (err: ErrorClaude) {
-                                    err.message
-                                } catch (err: Exception) {
-                                    "No se pudo probar la conexión."
-                                }
-                                probando = false
-                            }
-                        },
-                    ) { Text("Probar conexión") }
-                }
-                prueba?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary) }
-                Etiqueta("Modelo")
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf(
-                        "claude-sonnet-5-5" to "Sonnet 5.5 (mejor calidad)",
-                        "claude-haiku-5-5" to "Haiku 5.5 (más barato)",
-                    ).forEach { (id, nombre) ->
-                        FilterChip(
-                            selected = e.ajustes.modelo == id,
-                            onClick = { Store.update(ctx) { it.copy(ajustes = it.ajustes.copy(modelo = id)) } },
-                            label = { Text(nombre) },
-                        )
-                    }
-                }
+                OutlinedTextField(
+                    value = token,
+                    onValueChange = { token = it.trim() },
+                    label = { Text("Token de GitHub (github_pat_…)") },
+                    singleLine = true,
+                    visualTransformation = if (verToken) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = { TextButton(onClick = { verToken = !verToken }) { Text(if (verToken) "Ocultar" else "Ver") } },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Button(
+                    enabled = !sincronizando && token.isNotBlank() && repo.contains("/"),
+                    onClick = {
+                        Store.update(ctx) { it.copy(ajustes = it.ajustes.copy(githubRepo = repo, githubToken = token)) }
+                        sincronizando = true
+                        estadoSync = "Sincronizando…"
+                        scope.launch {
+                            val r = Sync.sincronizar(ctx, forzar = true)
+                            estadoSync = r?.mensaje ?: "Revisa el repositorio y el token."
+                            sincronizando = false
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) { Text("Guardar y sincronizar ahora") }
+                estadoSync?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary) }
+                Text(
+                    (if (e.ultimaSync.isNotBlank()) "Última sincronización: ${e.ultimaSync.replace("T", " a las ").dropLast(3)}." else "Todavía no se ha sincronizado.") +
+                        (e.planRemoto?.actualizado?.takeIf { it.isNotBlank() }?.let { " Plan de Claude del $it." } ?: ""),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
 
@@ -223,5 +255,71 @@ private fun Permiso(nombre: String, detalle: String, activo: Boolean?, abrir: ()
             false -> TextButton(onClick = abrir) { Text("Activar") }
             null -> TextButton(onClick = abrir) { Text("Revisar") }
         }
+    }
+}
+
+@Composable
+private fun CampoClave(
+    titulo: String,
+    ayuda: String,
+    inicial: String,
+    modeloInicial: String,
+    guardar: (String, String) -> Unit,
+    probar: suspend (String, String) -> String,
+) {
+    val scope = rememberCoroutineScope()
+    var clave by remember { mutableStateOf(inicial) }
+    var modelo by remember { mutableStateOf(modeloInicial) }
+    var ver by remember { mutableStateOf(false) }
+    var verModelo by remember { mutableStateOf(false) }
+    var mensaje by remember { mutableStateOf<String?>(null) }
+    var probando by remember { mutableStateOf(false) }
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(titulo, fontWeight = FontWeight.SemiBold)
+        Text(ayuda, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        OutlinedTextField(
+            value = clave,
+            onValueChange = { clave = it.trim() },
+            label = { Text("Clave") },
+            singleLine = true,
+            visualTransformation = if (ver) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = { TextButton(onClick = { ver = !ver }) { Text(if (ver) "Ocultar" else "Ver") } },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        if (verModelo) {
+            OutlinedTextField(
+                value = modelo,
+                onValueChange = { modelo = it.trim() },
+                label = { Text("Modelo") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            OutlinedButton(
+                enabled = !probando && clave.isNotBlank(),
+                onClick = {
+                    probando = true
+                    mensaje = "Probando…"
+                    scope.launch {
+                        mensaje = try {
+                            probar(clave, modelo)
+                            guardar(clave, modelo)
+                            "Funciona. Clave guardada."
+                        } catch (err: ErrorClaude) {
+                            err.message
+                        } catch (err: Exception) {
+                            "No se pudo probar: ${err.message ?: "error desconocido"}"
+                        }
+                        probando = false
+                    }
+                },
+            ) { Text("Probar y guardar") }
+            if (clave.isBlank() && inicial.isNotBlank()) {
+                TextButton(onClick = { guardar("", modelo); mensaje = "Clave borrada." }) { Text("Borrar") }
+            }
+            TextButton(onClick = { verModelo = !verModelo }) { Text(if (verModelo) "Ocultar modelo" else "Modelo") }
+        }
+        mensaje?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary) }
     }
 }

@@ -94,7 +94,14 @@ object Logica {
         return Triple(ultimo.first, ultimo.second, 13..16)
     }
 
-    fun leccion(d: LocalDate): Leccion? = Plan.LECCIONES[d.toString()]
+    /** Primero la lección que ajustó Claude en la última revisión; si no hay, la del plan base. */
+    fun leccion(d: LocalDate): Leccion? {
+        val k = d.toString()
+        Store.estado.value.planRemoto?.lecciones?.get(k)?.let {
+            if (it.titulo.isNotBlank()) return Leccion(it.titulo, it.pasos, it.ingles, it.mejorar)
+        }
+        return Plan.LECCIONES[k]
+    }
 
     fun entrada(e: Estado, d: LocalDate) = e.entradas[d.toString()] ?: Entrada()
 
@@ -169,6 +176,7 @@ object Logica {
                 sb.appendLine("  Examen $tipo: ${r.puntaje}/${r.total}")
                 r.fallos.forEach { f -> sb.appendLine("    Falló: ${f.q}" + if (f.r.isNotBlank()) " → ${f.r}" else "") }
             }
+            en.reportes.forEach { sb.appendLine("  Pregunta reportada: $it") }
             if (en.nota.isNotBlank()) sb.appendLine("  Nota: ${en.nota}")
         }
         sb.appendLine()

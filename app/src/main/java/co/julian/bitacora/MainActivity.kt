@@ -36,6 +36,9 @@ import androidx.core.content.ContextCompat
 import co.julian.bitacora.alarm.Notifs
 import co.julian.bitacora.alarm.Scheduler
 import co.julian.bitacora.data.Store
+import co.julian.bitacora.data.Sync
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import co.julian.bitacora.ui.AjustesScreen
 import co.julian.bitacora.ui.BitacoraTheme
 import co.julian.bitacora.ui.ExamenScreen
@@ -57,6 +60,8 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         Scheduler.reprogramar(this)
+        // Sube el registro y baja el plan de Claude (como mucho cada 2 horas).
+        lifecycleScope.launch { Sync.sincronizar(this@MainActivity) }
     }
 }
 

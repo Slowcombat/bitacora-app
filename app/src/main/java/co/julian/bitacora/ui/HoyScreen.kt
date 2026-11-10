@@ -74,6 +74,19 @@ fun HoyScreen(
         }
         item { NavegadorFecha(fecha, setFecha) }
 
+        e.planRemoto?.takeIf { it.mensaje.isNotBlank() && fecha == hoy }?.let { plan ->
+            item {
+                val c = LocalColoresTipo.current
+                Tarjeta(fondo = c.suave("eng")) {
+                    Etiqueta("Revisión de Claude" + if (plan.actualizado.isNotBlank()) " · ${plan.actualizado}" else "", c.principal("eng"))
+                    Text(plan.mensaje, style = MaterialTheme.typography.bodyMedium)
+                    if (plan.refuerzo.isNotEmpty()) {
+                        Text("A reforzar: ${plan.refuerzo.joinToString(", ")}", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+            }
+        }
+
         item {
             val l = Logica.leccion(fecha)
             val c = LocalColoresTipo.current
